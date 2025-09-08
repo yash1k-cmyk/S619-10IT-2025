@@ -10,14 +10,25 @@ class Person:
         self.expenses = expenses if expenses else []
 
     def monthly_update(self, month):
-        total_expenses = sum(exp(month) if callable(exp) else exp for exp in self.expenses)
-        self.balance += self.salary - total_expenses
+
+
+        total_expenses = 0
+        for expense in self.expenses:
+            if callable(expense):
+                monthly_expense = expense(month)
+            else:
+                monthly_expense = expense
+
+            total_expenses += monthly_expense
+
+
+        balance_change = self.salary - total_expenses
+
+
+        self.balance += balance_change
 
     def __str__(self):
         return f"{self.name} накопит: {self.balance:,.0f} руб."
-
-
-
 
 
 def annuity_payment(loan_amount, loan_rate, loan_years):
@@ -82,12 +93,8 @@ def simulate(years):
     print(alice)
 
 
-
-
-
-
 if __name__ == "__main__":
     years_to_simulate = float(input("Введите количество лет для симуляции: "))
     simulate(years_to_simulate)
 
-# Исправленно с учетом правок 07.09.2025
+# Исправленно с учетом правок 08.09.2025
