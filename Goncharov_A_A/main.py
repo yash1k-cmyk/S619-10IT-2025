@@ -1,5 +1,6 @@
 # main.py
-# TODO:better input
+# TODO:Better input
+# FIXME:pls add input checking
 from person import Person
 from simulation import Simulation
 
@@ -23,9 +24,6 @@ def main():
         "transport": 1500
     })
     
-    # Initial investments
-    alice.invest(50000)
-    
     simulation = Simulation(years=years, output_frequency=output_frequency)
     simulation.add_person(bob)
     simulation.add_person(alice)
@@ -35,9 +33,7 @@ def main():
     
     print("\n=== FINAL RESULTS ===")
     for person in [bob, alice]:
-        total_wealth = person.savings + person.investments
-        print(f"{person.name}: Total wealth {total_wealth} RUB "
-              f"(Savings: {person.savings} RUB, Investments: {person.investments} RUB)")
+        print(f"{person.name}: Total savings {person.savings} RUB")
 
 if __name__ == "__main__":
     main()
