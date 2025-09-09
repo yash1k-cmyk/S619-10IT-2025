@@ -2,6 +2,8 @@
 # TODO:TRY EXCEPT TO EVERYTHING!!!!! (eg data validation in Person (salary and expenses))
 from person import Person
 from simulation import Simulation
+import json
+from pathlib import Path
 
 def main():
     print("=== Bob and Alice Life Simulation ===")
@@ -51,6 +53,15 @@ def main():
     print("\n=== FINAL RESULTS ===")
     for person in [bob, alice]:
         print(f"{person.name}: Total savings {person.savings} RUB")
+
+    export_payload = {
+        "params": {"years": years, "output_frequency": output_frequency},
+        "months": results,
+        "final": [{"name": p.name, "savings": p.savings} for p in [bob, alice]],
+    }
+    out_path = Path(__file__).parent / "results.json"
+    with open(out_path, "w", encoding="utf-8") as file:
+        json.dump(export_payload, file, indent=2)
 
 if __name__ == "__main__":
     main()
