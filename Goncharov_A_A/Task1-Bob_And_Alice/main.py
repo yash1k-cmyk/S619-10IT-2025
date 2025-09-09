@@ -24,7 +24,7 @@ def main():
             except ValueError:
                 print("Please enter a valid integer.")
 
-    years = read_int("Enter simulation duration in years: ", min_value=1)
+    years = read_int("Enter simulation duration in years: ", min_value=1, max_value=150)
     output_frequency = read_int("Enter output frequency (1-12 months): ", min_value=1, max_value=12)
     
     bob = Person("Bob", 80000, {

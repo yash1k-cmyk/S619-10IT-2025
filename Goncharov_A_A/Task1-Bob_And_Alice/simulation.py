@@ -1,6 +1,7 @@
 # simulation.py
 # TODO:Better events
 import random
+import webbrowser
 
 class Simulation:
     def __init__(self, years=5, output_frequency=1):
@@ -17,18 +18,18 @@ class Simulation:
             ("Cat scratched the sofa", 0.1, -8000),
             ("Unexpected medical bill", 0.08, -12000),
             ("Received bonus", 0.07, 15000),
-            ("MR BEAST DONATED U YOOOO", 0.01, 99999),
-            ("Cat got sick", 0.06, -5000),
+            ("MR BEAST DONATED U", 0.001, 999999),
+            ("Cat got sick", 0.06, -6000),
             ("Found part-time job", 0.04, 7000),
             ("Appliances broke", 0.09, -6000),
             ("Car repair", 0.07, -12000),
             ("Tax refund", 0.03, 8000),
-            ("Gift from relative", 0.05, 5000),
+            ("Gift from relative", 0.05, 4500),
             ("Lost wallet", 0.02, -3000)
         ]
         
         for event_name, probability, amount in events:
-            if random.random() < probability:
+            if random.random() <= probability:
                 person.savings += amount
                 return f"{event_name}: {amount} RUB"
         
@@ -36,13 +37,17 @@ class Simulation:
         
     def run(self):
         for month in range(1, self.months + 1):
-            month_result = {"month": month, "people": []}
+            month_result = {"month": month,
+                            "people": []}
             
             if month % 12 == 0:
                 for person in self.people:
                     if person.name == "Bob" and "rent" in person.expenses:
                         old_rent = person.expenses["rent"]
                         person.expenses["rent"] = int(old_rent * 1.05)
+            if month % 1200 == 0:
+                webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            else: pass
             
             for person in self.people:
                 person.update_savings()
