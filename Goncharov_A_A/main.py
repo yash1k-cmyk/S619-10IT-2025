@@ -1,5 +1,6 @@
-# main.py
-# TODO:TRY EXCEPT TO EVERYTHING!!!!! (eg data validation in Person (salary and expenses))
+# main.py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
+# TODO:Better input
+# FIXME:pls add input checking
 from person import Person
 from simulation import Simulation
 
