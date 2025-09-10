@@ -2,6 +2,34 @@
 # TODO:Better events
 import random
 import webbrowser
+from enum import Enum
+
+class Events(Enum):
+    CAT_SCRATCHED_SOFA = ("Cat scratched the sofa", 0.1, -8000)
+    UNEXPECTED_MEDICAL_BILL = ("Unexpected medical bill", 0.08, -12000)
+    RECEIVED_BONUS = ("Received bonus", 0.07, 15000)
+    MR_BEAST_DONATED = ("MR BEAST DONATED U", 0.001, 999999)
+    CAT_GOT_SICK = ("Cat got sick", 0.06, -6000)
+    FOUND_PART_TIME_JOB = ("Found part-time job", 0.04, 7000)
+    APPLIANCES_BROKE = ("Appliances broke", 0.09, -6000)
+    CAR_REPAIR = ("Car repair", 0.07, -12000)
+    TAX_REFUND = ("Tax refund", 0.03, 8000)
+    GIFT_FROM_RELATIVE = ("Gift from relative", 0.05, 4500)
+    LOST_WALLET = ("Lost wallet", 0.02, -3000)
+
+    def __init__(self, description, probability, amount):
+        self.description = description
+        self.probability = probability
+        self.amount = amount
+
+    @classmethod
+    def get_random_event(cls, person):
+        for idx, event in enumerate(cls):
+            if random.random() <= event.probability:
+                person.savings += event.amount
+                return f"Event #{idx + 1} - {event.description}: {event.amount} RUB"
+        return "No events"
+
 
 class Simulation:
     def __init__(self, years=5, output_frequency=1, people: list=None):
@@ -12,28 +40,6 @@ class Simulation:
         self.people = people
         self.results = []
 
-    def get_random_event(self, person):
-
-        events = [
-            ("Cat scratched the sofa", 0.1, -8000),
-            ("Unexpected medical bill", 0.08, -12000),
-            ("Received bonus", 0.07, 15000),
-            ("MR BEAST DONATED U", 0.001, 999999),
-            ("Cat got sick", 0.06, -6000),
-            ("Found part-time job", 0.04, 7000),
-            ("Appliances broke", 0.09, -6000),
-            ("Car repair", 0.07, -12000),
-            ("Tax refund", 0.03, 8000),
-            ("Gift from relative", 0.05, 4500),
-            ("Lost wallet", 0.02, -3000)
-        ]
-
-        for idx, (event_name, probability, amount) in enumerate(events):
-            if random.random() <= probability:
-                person.savings += amount
-                return f"Event #{idx + 1} - {event_name}: {amount} RUB"
-
-        return "No events"
 
     def run(self):
         for month in range(1, self.months + 1):
@@ -51,7 +57,7 @@ class Simulation:
             
             for person in self.people:
                 person.update_savings()
-                event_text = self.get_random_event(person)
+                event_text = Events.get_random_event(person)
                 
                 month_result["people"].append({
                     "name": person.name,
