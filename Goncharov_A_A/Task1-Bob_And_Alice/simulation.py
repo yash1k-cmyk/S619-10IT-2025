@@ -4,16 +4,16 @@ import random
 import webbrowser
 
 class Simulation:
-    def __init__(self, years=5, output_frequency=1):
+    def __init__(self, years=5, output_frequency=1, people: list=None):
+        if people is None:
+            people = []
         self.months = years * 12
         self.output_frequency = output_frequency
-        self.people = []
+        self.people = people
         self.results = []
-        
-    def add_person(self, person):
-        self.people.append(person)
-        
+
     def get_random_event(self, person):
+
         events = [
             ("Cat scratched the sofa", 0.1, -8000),
             ("Unexpected medical bill", 0.08, -12000),
@@ -27,14 +27,14 @@ class Simulation:
             ("Gift from relative", 0.05, 4500),
             ("Lost wallet", 0.02, -3000)
         ]
-        
-        for event_name, probability, amount in events:
+
+        for idx, (event_name, probability, amount) in enumerate(events):
             if random.random() <= probability:
                 person.savings += amount
-                return f"{event_name}: {amount} RUB"
-        
+                return f"Event #{idx + 1} - {event_name}: {amount} RUB"
+
         return "No events"
-        
+
     def run(self):
         for month in range(1, self.months + 1):
             month_result = {"month": month,
@@ -63,7 +63,7 @@ class Simulation:
             
         return self.results
     
-    def print_results(self):
+    def print_results(self, people: list):
         current_year = 0
         for i, month in enumerate(self.results):
             year = (month['month'] - 1) // 12 + 1
@@ -75,3 +75,7 @@ class Simulation:
                 print(f"\nMonth {month['month']}:")
                 for person in month["people"]:
                     print(f"  {person['name']}: Savings {person['savings']} RUB | {person['event']}")
+        print("\n=== FINAL RESULTS ===")
+
+        for person in people:
+            print(f"{person.name}: Total savings {person.savings} RUB")

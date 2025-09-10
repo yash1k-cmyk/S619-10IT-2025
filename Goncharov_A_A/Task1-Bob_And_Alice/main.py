@@ -43,16 +43,10 @@ def main():
         "transport": 1500
     })
     
-    simulation = Simulation(years=years, output_frequency=output_frequency)
-    simulation.add_person(bob)
-    simulation.add_person(alice)
+    simulation = Simulation(years=years, output_frequency=output_frequency, people=[bob, alice])
     
     results = simulation.run()
-    simulation.print_results()
-    
-    print("\n=== FINAL RESULTS ===")
-    for person in [bob, alice]:
-        print(f"{person.name}: Total savings {person.savings} RUB")
+    simulation.print_results([bob, alice])
 
     export_payload = {
         "params": {"years": years, "output_frequency": output_frequency},
