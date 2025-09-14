@@ -11,8 +11,6 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "your-very-secret-key-change-in-production-12345")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-# API ключи
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "23e3c51c7e73edad91f3fbbc8fe0562a")
 
 # База данных
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./weather_dashboard.db")

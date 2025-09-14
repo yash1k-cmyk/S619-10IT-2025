@@ -26,9 +26,6 @@ class WeatherDashboard {
   }
 
   loadApiKey() {
-    // Fallback на хардкод (для разработки)
-    // В продакшене API ключ должен загружаться с сервера
-    return "23e3c51c7e73edad91f3fbbc8fe0562a"
   }
 
   bindEvents() {
