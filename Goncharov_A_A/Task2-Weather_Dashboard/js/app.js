@@ -1,11 +1,15 @@
 // Weather Dashboard App
 class WeatherDashboard {
   constructor() {
-    this.apiKey = "23e3c51c7e73edad91f3fbbc8fe0562a" // Замените на ваш API ключ
+    this.apiKey = this.loadApiKey()
+    this.baseUrl = "http://localhost:8000/api" // Backend API URL
     this.currentUser = null
     this.searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
     this.tasks = JSON.parse(localStorage.getItem("tasks")) || []
     this.lastWeatherUpdate = null
+    this.isOnline = navigator.onLine
+    this.settings = this.loadSettings()
+    this.autoUpdateInterval = null
 
     this.init()
   }
@@ -16,6 +20,15 @@ class WeatherDashboard {
     this.renderSearchHistory()
     this.renderTasks()
     this.setupNavigation()
+    this.setupOfflineHandling()
+    this.setupSettings()
+    this.applySettings()
+  }
+
+  loadApiKey() {
+    // Fallback на хардкод (для разработки)
+    // В продакшене API ключ должен загружаться с сервера
+    return "23e3c51c7e73edad91f3fbbc8fe0562a"
   }
 
   bindEvents() {
@@ -117,43 +130,91 @@ class WeatherDashboard {
   }
 
   async fetchWeatherData(city) {
-    // Симуляция API запроса (замените на реальный запрос к OpenWeatherMap)
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Симуляция данных
-        const mockData = {
-          name: city,
-          main: {
-            temp: Math.round(Math.random() * 30 - 5),
-            feels_like: Math.round(Math.random() * 30 - 5),
-            humidity: Math.round(Math.random() * 100),
-            pressure: Math.round(1000 + Math.random() * 50),
-          },
-          weather: [
-            {
-              main: "Clear",
-              description: "ясно",
-              icon: "01d",
-            },
-          ],
-          wind: {
-            speed: Math.round(Math.random() * 10),
-            deg: Math.round(Math.random() * 360),
-          },
-          visibility: Math.round(Math.random() * 10000),
-          clouds: {
-            all: Math.round(Math.random() * 100),
-          },
-        }
+    // Сначала пробуем получить данные из backend API
+    if (this.isOnline && this.baseUrl) {
+      try {
+        const response = await fetch(`${this.baseUrl}/weather/${encodeURIComponent(city)}/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(this.currentUser && { 'Authorization': `Bearer ${this.getAuthToken()}` })
+          }
+        })
 
-        if (Math.random() > 0.1) {
-          resolve(mockData)
-        } else {
-          reject(new Error("City not found"))
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success) {
+            return this.transformBackendData(data.data)
+          }
         }
-      }, 1000)
-    })
+      } catch (error) {
+        console.warn('Backend API недоступен, используем прямой запрос к OpenWeatherMap:', error)
+      }
+    }
+
+    // Прямой запрос к OpenWeatherMap API
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric&lang=ru`
+      )
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Город не найден")
+        }
+        if (response.status === 401) {
+          throw new Error("Неверный API ключ")
+        }
+        if (response.status === 429) {
+          throw new Error("Превышен лимит запросов к API")
+        }
+        throw new Error(`Ошибка API: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Ошибка при получении данных о погоде:', error)
+      throw error
+    }
   }
+
+  transformBackendData(data) {
+    // Преобразование данных из backend в формат OpenWeatherMap
+    return {
+      name: data.city.name,
+      main: {
+        temp: data.temperature,
+        feels_like: data.feels_like,
+        humidity: data.humidity,
+        pressure: data.pressure,
+      },
+      weather: [{
+        main: this.getWeatherMainFromDescription(data.description),
+        description: data.description,
+        icon: data.icon,
+      }],
+      wind: {
+        speed: data.wind_speed,
+        deg: data.wind_direction,
+      },
+      visibility: data.visibility,
+      clouds: {
+        all: data.clouds,
+      },
+    }
+  }
+
+  getWeatherMainFromDescription(description) {
+    const desc = description.toLowerCase()
+    if (desc.includes('ясно') || desc.includes('солнечно')) return 'Clear'
+    if (desc.includes('облачно') || desc.includes('пасмурно')) return 'Clouds'
+    if (desc.includes('дождь')) return 'Rain'
+    if (desc.includes('снег')) return 'Snow'
+    if (desc.includes('туман')) return 'Mist'
+    return 'Clear'
+  }
+
 
   displayWeather(data) {
     const weatherCard = document.getElementById("weather-card")
@@ -307,9 +368,25 @@ class WeatherDashboard {
     const password = document.getElementById("auth-password").value
     const mode = document.getElementById("auth-modal").dataset.mode
 
+    // Простая валидация
+    if (!email || !password) {
+      this.showNotification("Заполните все поля", "error")
+      return
+    }
+
+    if (password.length < 6) {
+      this.showNotification("Пароль должен содержать минимум 6 символов", "error")
+      return
+    }
+
     try {
-      // Симуляция аутентификации (замените на реальный API)
-      await this.simulateAuth(email, password, mode)
+      if (this.isOnline && this.baseUrl) {
+        // Реальная аутентификация через API
+        await this.authenticateWithAPI(email, password, mode)
+      } else {
+        // Fallback: симуляция аутентификации
+        await this.simulateAuth(email, password, mode)
+      }
 
       this.currentUser = { email }
       this.updateAuthUI()
@@ -323,20 +400,39 @@ class WeatherDashboard {
         tasksSection.classList.remove("hidden")
       }
     } catch (error) {
+      console.error('Ошибка аутентификации:', error)
       this.showNotification(error.message, "error")
     }
   }
 
-  async simulateAuth(email, password, mode) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email && password.length >= 6) {
-          resolve()
-        } else {
-          reject(new Error("Неверные данные для входа"))
-        }
-      }, 1000)
+  async authenticateWithAPI(email, password, mode) {
+    const endpoint = mode === "login" ? "login" : "register"
+    const response = await fetch(`${this.baseUrl}/auth/${endpoint}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password })
     })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка аутентификации')
+    }
+
+    if (mode === "login" && data.token) {
+      this.setAuthToken(data.token)
+    }
+  }
+
+  async simulateAuth(email, password, mode) {
+    // Простая проверка для offline режима
+    if (email && password.length >= 6) {
+      return Promise.resolve()
+    } else {
+      return Promise.reject(new Error("Неверные данные для входа"))
+    }
   }
 
   logout() {
@@ -472,6 +568,31 @@ class WeatherDashboard {
     }
   }
 
+  // Offline handling
+  setupOfflineHandling() {
+    window.addEventListener('online', () => {
+      this.isOnline = true
+      this.showNotification('Соединение восстановлено', 'success')
+    })
+
+    window.addEventListener('offline', () => {
+      this.isOnline = false
+      this.showNotification('Работа в офлайн режиме', 'info')
+    })
+  }
+
+  getAuthToken() {
+    return localStorage.getItem('authToken')
+  }
+
+  setAuthToken(token) {
+    localStorage.setItem('authToken', token)
+  }
+
+  removeAuthToken() {
+    localStorage.removeItem('authToken')
+  }
+
   // Utility methods
   showLoading() {
     const searchBtn = document.getElementById("search-btn")
@@ -517,12 +638,162 @@ class WeatherDashboard {
 
   getErrorMessage(error) {
     const errorMessages = {
-      "City not found": "Город не найден",
+      "Город не найден": "Город не найден",
+      "Неверный API ключ": "Ошибка настройки API ключа",
+      "Превышен лимит запросов к API": "Слишком много запросов, попробуйте позже",
       "Network error": "Ошибка сети",
-      "API limit exceeded": "Превышен лимит запросов",
+      "Failed to fetch": "Нет соединения с интернетом",
     }
 
-    return errorMessages[error.message] || "Произошла ошибка при получении данных о погоде"
+    return errorMessages[error.message] || `Ошибка: ${error.message}`
+  }
+
+  // Settings management
+  loadSettings() {
+    const defaultSettings = {
+      darkTheme: true,
+      animations: true,
+      units: 'metric',
+      language: 'ru',
+      autoUpdate: false,
+      soundNotifications: false,
+      weatherAlerts: true,
+    }
+    
+    const saved = localStorage.getItem('appSettings')
+    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings
+  }
+
+  saveSettingsToStorage() {
+    localStorage.setItem('appSettings', JSON.stringify(this.settings))
+  }
+
+  setupSettings() {
+    // Bind settings events
+    document.getElementById('save-settings-btn')?.addEventListener('click', () => this.saveSettings())
+    document.getElementById('reset-settings-btn')?.addEventListener('click', () => this.resetSettings())
+    
+    // Bind individual setting changes
+    document.getElementById('dark-theme-toggle')?.addEventListener('change', (e) => {
+      this.settings.darkTheme = e.target.checked
+      this.applyTheme()
+    })
+    
+    document.getElementById('animations-toggle')?.addEventListener('change', (e) => {
+      this.settings.animations = e.target.checked
+      this.applyAnimations()
+    })
+    
+    document.getElementById('units-select')?.addEventListener('change', (e) => {
+      this.settings.units = e.target.value
+    })
+    
+    document.getElementById('language-select')?.addEventListener('change', (e) => {
+      this.settings.language = e.target.value
+    })
+    
+    document.getElementById('auto-update-toggle')?.addEventListener('change', (e) => {
+      this.settings.autoUpdate = e.target.checked
+      this.setupAutoUpdate()
+    })
+    
+    document.getElementById('sound-toggle')?.addEventListener('change', (e) => {
+      this.settings.soundNotifications = e.target.checked
+    })
+    
+    document.getElementById('weather-alerts-toggle')?.addEventListener('change', (e) => {
+      this.settings.weatherAlerts = e.target.checked
+    })
+  }
+
+  applySettings() {
+    // Apply theme
+    this.applyTheme()
+    
+    // Apply animations
+    this.applyAnimations()
+    
+    // Apply units
+    this.applyUnits()
+    
+    // Apply language
+    this.applyLanguage()
+    
+    // Setup auto-update
+    this.setupAutoUpdate()
+    
+    // Load settings into UI
+    this.loadSettingsIntoUI()
+  }
+
+  loadSettingsIntoUI() {
+    document.getElementById('dark-theme-toggle').checked = this.settings.darkTheme
+    document.getElementById('animations-toggle').checked = this.settings.animations
+    document.getElementById('units-select').value = this.settings.units
+    document.getElementById('language-select').value = this.settings.language
+    document.getElementById('auto-update-toggle').checked = this.settings.autoUpdate
+    document.getElementById('sound-toggle').checked = this.settings.soundNotifications
+    document.getElementById('weather-alerts-toggle').checked = this.settings.weatherAlerts
+  }
+
+  applyTheme() {
+    if (this.settings.darkTheme) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+
+  applyAnimations() {
+    if (this.settings.animations) {
+      document.documentElement.classList.remove('no-animations')
+    } else {
+      document.documentElement.classList.add('no-animations')
+    }
+  }
+
+  applyUnits() {
+    // This would be used when fetching weather data
+    // For now, we'll just store the preference
+    console.log('Units changed to:', this.settings.units)
+  }
+
+  applyLanguage() {
+    // This would be used for API calls and UI text
+    // For now, we'll just store the preference
+    console.log('Language changed to:', this.settings.language)
+  }
+
+  setupAutoUpdate() {
+    if (this.autoUpdateInterval) {
+      clearInterval(this.autoUpdateInterval)
+      this.autoUpdateInterval = null
+    }
+    
+    if (this.settings.autoUpdate) {
+      // Update every 30 minutes
+      this.autoUpdateInterval = setInterval(() => {
+        const cityInput = document.getElementById('city-input')
+        if (cityInput.value.trim()) {
+          this.searchWeather()
+        }
+      }, 30 * 60 * 1000) // 30 minutes
+    }
+  }
+
+  resetSettings() {
+    if (confirm('Сбросить все настройки к значениям по умолчанию?')) {
+      localStorage.removeItem('appSettings')
+      this.settings = this.loadSettings()
+      this.applySettings()
+      this.loadSettingsIntoUI()
+      this.showNotification('Настройки сброшены', 'info')
+    }
+  }
+
+  saveSettings() {
+    this.saveSettingsToStorage()
+    this.showNotification('Настройки сохранены', 'success')
   }
 }
 

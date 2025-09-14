@@ -188,8 +188,106 @@
 
                 <!-- Settings Section -->
                 <section id="section-settings" class="glass-effect rounded-xl p-6 hidden">
-                    <h2 class="text-xl font-semibold mb-2 text-foreground">Настройки</h2>
-                    <p class="text-muted-foreground">Минималистичный режим включён по умолчанию.</p>
+                    <h2 class="text-xl font-semibold mb-4 text-foreground">Настройки</h2>
+                    
+                    <!-- Общие настройки -->
+                    <div class="space-y-6">
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-foreground">Внешний вид</h3>
+                            
+                            <div class="flex items-center justify-between p-4 bg-card/30 rounded-lg">
+                                <div>
+                                    <label class="text-foreground font-medium">Тёмная тема</label>
+                                    <p class="text-sm text-muted-foreground">Космический минималистичный дизайн</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="dark-theme-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-card/30 rounded-lg">
+                                <div>
+                                    <label class="text-foreground font-medium">Анимации</label>
+                                    <p class="text-sm text-muted-foreground">Включить анимации и эффекты</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="animations-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Настройки погоды -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-foreground">Погода</h3>
+                            
+                            <div class="p-4 bg-card/30 rounded-lg">
+                                <label class="text-foreground font-medium mb-2 block">Единицы измерения</label>
+                                <select id="units-select" class="input-field w-full">
+                                    <option value="metric">Цельсий (°C)</option>
+                                    <option value="imperial">Фаренгейт (°F)</option>
+                                    <option value="kelvin">Кельвин (K)</option>
+                                </select>
+                            </div>
+
+                            <div class="p-4 bg-card/30 rounded-lg">
+                                <label class="text-foreground font-medium mb-2 block">Язык</label>
+                                <select id="language-select" class="input-field w-full">
+                                    <option value="ru">Русский</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-card/30 rounded-lg">
+                                <div>
+                                    <label class="text-foreground font-medium">Автообновление</label>
+                                    <p class="text-sm text-muted-foreground">Обновлять погоду каждые 30 минут</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="auto-update-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Настройки уведомлений -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-foreground">Уведомления</h3>
+                            
+                            <div class="flex items-center justify-between p-4 bg-card/30 rounded-lg">
+                                <div>
+                                    <label class="text-foreground font-medium">Звуковые уведомления</label>
+                                    <p class="text-sm text-muted-foreground">Воспроизводить звук при уведомлениях</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="sound-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-card/30 rounded-lg">
+                                <div>
+                                    <label class="text-foreground font-medium">Погодные предупреждения</label>
+                                    <p class="text-sm text-muted-foreground">Уведомлять о плохой погоде</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="weather-alerts-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки управления -->
+                        <div class="flex space-x-4 pt-4">
+                            <button id="save-settings-btn" class="btn-primary px-6 py-2 rounded-lg">
+                                Сохранить настройки
+                            </button>
+                            <button id="reset-settings-btn" class="px-6 py-2 text-sm bg-muted/20 text-muted-foreground rounded-lg hover:bg-muted/30 transition-colors">
+                                Сбросить
+                            </button>
+                        </div>
+                    </div>
                 </section>
             </div>
         </main>
