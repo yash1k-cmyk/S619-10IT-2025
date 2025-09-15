@@ -1,0 +1,70 @@
+import math
+
+# --- Исходные данные ---
+start_capital_bob = 100_000
+start_capital_alice = 100_000
+
+salary_bob = 80_000
+salary_alice = 200_000
+
+# Боб
+rent_bob = 50_000
+cat_bob = 5_000
+food_clothes_fun_bob = 20_000
+save_bob = 10_000  # он стабильно откладывает
+
+# Алиса
+food_clothes_fun_alice = 120_000
+
+# Ипотека Алисы
+loan_alice = 10_000_000
+annual_rate = 0.12
+monthly_rate = annual_rate / 12
+n_months = 30 * 12
+
+# --- формула аннуитетного платежа ---
+monthly_payment_alice = loan_alice * (monthly_rate * (1 + monthly_rate) ** n_months) / ((1 + monthly_rate) ** n_months - 1)
+
+# --- функция моделирования ---
+def simulate(years):
+    bob_capital = start_capital_bob
+    alice_capital = start_capital_alice
+    alice_debt = loan_alice
+
+    for month in range(years * 12):
+        # Боб
+        bob_capital += salary_bob
+        bob_capital -= (rent_bob + cat_bob + food_clothes_fun_bob)
+        bob_capital += save_bob  # он стабильно копит
+
+        # Алиса
+        alice_capital += salary_alice
+        alice_capital -= food_clothes_fun_alice
+
+        if alice_debt > 0:
+            # проценты и погашение
+            interest = alice_debt * monthly_rate
+            principal_payment = monthly_payment_alice - interest
+            alice_debt -= principal_payment
+            alice_capital -= monthly_payment_alice
+
+            # если переплатила, возвращаем излишек
+            if alice_debt < 0:
+                alice_capital += -alice_debt
+                alice_debt = 0
+
+    return bob_capital, alice_capital, alice_debt
+
+# --- расчёты ---
+results = {}
+for years in [1, 5, 10, 100]:
+    bob, alice, debt = simulate(years)
+    results[years] = (bob, alice, debt)
+
+# --- вывод ---
+for years, (bob, alice, debt) in results.items():
+    print(f"Через {years} лет:")
+    print(f"  Боб: {bob:,.0f}")
+    print(f"  Алиса: {alice:,.0f}")
+    print(f"  Остаток долга Алисы: {debt:,.0f}")
+    print()
