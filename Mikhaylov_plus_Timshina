@@ -1,67 +1,88 @@
 import math
 
-# --- Исходные данные ---
-start_capital_bob = 100_000
-start_capital_alice = 100_000
+# --- Класс Боба ---
+class Bob:
+    def __init__(self):
+        self.capital = 100_000
+        self.salary = 80_000
+        self.rent = 50_000
+        self.cat = 5_000
+        self.food_clothes_fun = 20_000
+        self.save = 10_000  # он стабильно откладывает
 
-salary_bob = 80_000
-salary_alice = 200_000
+    def month(self):
+        self.capital += self.salary
+        self.capital -= (self.rent + self.cat + self.food_clothes_fun)
+        self.capital += self.save
+        return self.capital
 
-# Боб
-rent_bob = 50_000
-cat_bob = 5_000
-food_clothes_fun_bob = 20_000
-save_bob = 10_000  # он стабильно откладывает
 
-# Алиса
-food_clothes_fun_alice = 120_000
+# --- Класс Алисы ---
+class Alice:
+    def __init__(self):
+        self.capital = 100_000
+        self.salary = 200_000
+        self.food_clothes_fun = 120_000
+        self.car = 30_000  # новые расходы на машину
+        self.loan = 10_000_000
+        self.annual_rate = 0.12
+        self.monthly_rate = self.annual_rate / 12
+        self.n_months = 30 * 12
+        self.monthly_payment = self._calc_annuity()
 
-# Ипотека Алисы
-loan_alice = 10_000_000
-annual_rate = 0.12
-monthly_rate = annual_rate / 12
-n_months = 30 * 12
+    def _calc_annuity(self):
+        """Формула аннуитетного платежа (разбита на шаги)"""
+        r = self.monthly_rate
+        n = self.n_months
+        L = self.loan
 
-# --- формула аннуитетного платежа ---
-monthly_payment_alice = loan_alice * (monthly_rate * (1 + monthly_rate) ** n_months) / ((1 + monthly_rate) ** n_months - 1)
+        numerator = r * (1 + r) ** n
+        denominator = (1 + r) ** n - 1
+        payment = L * numerator / denominator
 
-# --- функция моделирования ---
+        return payment
+
+    def month(self):
+        # Зарплата
+        self.capital += self.salary
+
+        # Траты
+        self.capital -= (self.food_clothes_fun + self.car)
+
+        # Ипотека
+        if self.loan > 0:
+            interest = self.loan * self.monthly_rate
+            principal_payment = self.monthly_payment - interest
+            self.loan -= principal_payment
+            self.capital -= self.monthly_payment
+
+            # переплата
+            if self.loan < 0:
+                self.capital += -self.loan
+                self.loan = 0
+
+        return self.capital, self.loan
+
+
+# --- Функция моделирования ---
 def simulate(years):
-    bob_capital = start_capital_bob
-    alice_capital = start_capital_alice
-    alice_debt = loan_alice
+    bob = Bob()
+    alice = Alice()
 
-    for month in range(years * 12):
-        # Боб
-        bob_capital += salary_bob
-        bob_capital -= (rent_bob + cat_bob + food_clothes_fun_bob)
-        bob_capital += save_bob  # он стабильно копит
+    for _ in range(years * 12):
+        bob.month()
+        alice.month()
 
-        # Алиса
-        alice_capital += salary_alice
-        alice_capital -= food_clothes_fun_alice
+    return bob.capital, alice.capital, alice.loan
 
-        if alice_debt > 0:
-            # проценты и погашение
-            interest = alice_debt * monthly_rate
-            principal_payment = monthly_payment_alice - interest
-            alice_debt -= principal_payment
-            alice_capital -= monthly_payment_alice
 
-            # если переплатила, возвращаем излишек
-            if alice_debt < 0:
-                alice_capital += -alice_debt
-                alice_debt = 0
-
-    return bob_capital, alice_capital, alice_debt
-
-# --- расчёты ---
+# --- Расчёты ---
 results = {}
 for years in [1, 5, 10, 100]:
     bob, alice, debt = simulate(years)
     results[years] = (bob, alice, debt)
 
-# --- вывод ---
+# --- Вывод ---
 for years, (bob, alice, debt) in results.items():
     print(f"Через {years} лет:")
     print(f"  Боб: {bob:,.0f}")
