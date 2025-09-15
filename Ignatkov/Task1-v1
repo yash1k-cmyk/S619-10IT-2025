@@ -1,0 +1,123 @@
+class Person:
+    def __init__(self, name, salary, expenses, pet=None, property_value=0, property_increase_rate=0, mortgage_rate=0,
+                 mortgage=False, income_from_pet=0):
+        self.name = name
+        self.salary = salary
+        self.expenses = expenses
+        self.pet = pet
+        self.property_value = property_value
+        self.property_increase_rate = property_increase_rate
+        self.mortgage_rate = mortgage_rate
+        self.mortgage = mortgage
+        self.income_from_pet = income_from_pet
+        self.cash = 0
+        self.debt = 0
+        self.history = {
+            "monthly_income": [],
+            "monthly_expenses": [],
+            "cash": [],
+            "property_value": [],
+            "debt": []
+        }
+
+    def monthly_update(self, month):
+        self.cash += self.salary
+        total_expenses = sum(self.expenses.values())
+        self.cash -= total_expenses
+        if self.pet:
+            pet_expenses = self.pet.get_monthly_expenses()
+            self.cash -= pet_expenses
+            if self.pet.income:
+                self.cash += self.pet.income
+            self.pet.update(month)
+        if self.property_value > 0:
+            if month % 12 == 0:
+                self.property_value *= (1 + self.property_increase_rate)
+        if self.mortgage:
+            monthly_interest = self.debt * self.mortgage_rate / 12
+            principal_payment = min(self.debt, (self.salary * 0.3) - total_expenses) - monthly_interest
+            if principal_payment < 0:
+                principal_payment = 0
+            self.debt += monthly_interest - principal_payment
+            self.cash -= (monthly_interest + principal_payment)
+        self.history["monthly_income"].append(self.salary)
+        self.history["monthly_expenses"].append(total_expenses + (self.pet.get_monthly_expenses() if self.pet else 0))
+        self.history["cash"].append(self.cash)
+        self.history["property_value"].append(self.property_value)
+        self.history["debt"].append(self.debt)
+
+    def summary(self):
+        print(f"{self.name} итоговые финансы за год:")
+        print(f"Накопленный капитал: {self.cash:.2f} руб")
+        if self.mortgage:
+            print(f"Оставшийся долг по ипотеке: {self.debt:.2f} руб")
+        print(f"Стоимость недвижимости: {self.property_value:.2f} руб\n")
+
+
+class Pet:
+    def __init__(self, name, eating_cost, grooming_cost, grooming_interval=2, income=0):
+        self.name = name
+        self.eating_cost = eating_cost
+        self.grooming_cost = grooming_cost
+        self.grooming_interval = grooming_interval
+        self.income = income
+        self.months_since_grooming = 0
+        self.total_grooming_cost = 0
+
+    def get_monthly_expenses(self):
+        return self.eating_cost + (self.grooming_cost if self.months_since_grooming >= self.grooming_interval else 0)
+
+    def update(self, month):
+        self.months_since_grooming += 1
+        if self.months_since_grooming >= self.grooming_interval:
+            self.total_grooming_cost += self.grooming_cost
+            self.months_since_grooming = 0
+
+
+
+bob_expenses = {
+    "аренда": 30000,
+    "продукты": 4000,
+    "транспорт": 1500
+}
+bob_pet = Pet("кот", eating_cost=2000, grooming_cost=3000)
+bob = Person(
+    name="Bob",
+    salary=80000,
+    expenses=bob_expenses,
+    pet=bob_pet,
+    property_value=0,
+    property_increase_rate=0.05,
+    mortgage_rate=0,
+    mortgage=False
+)
+
+alice_expenses = {
+    "продукты": 4000,
+    "транспорт": 1500,
+    "собака": 4000
+}
+alice_pet = Pet("собака", eating_cost=4000, grooming_cost=3000, income=5000)
+alice = Person(
+    name="Alice",
+    salary=200000,
+    expenses=alice_expenses,
+    pet=alice_pet,
+    property_value=10_000_000,
+    property_increase_rate=0.12,
+    mortgage_rate=0.12 / 12,
+    mortgage=True
+)
+alice.debt = alice.property_value * 0.8
+
+months_in_year = 12
+
+for month in range(1, months_in_year + 1):
+    print(f"\nМесяц {month}")
+    bob.monthly_update(month)
+    alice.monthly_update(month)
+
+
+print("\n=== Итоги ===\n")
+bob.summary()
+alice.summary()
