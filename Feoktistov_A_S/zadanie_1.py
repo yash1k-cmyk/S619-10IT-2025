@@ -1,19 +1,22 @@
+Bob_zp = 80_000
+Alice_zp = 200_000
 class Person:
     def __init__(self, name):
         self.name = name
-        self.money = 100000
+        self.start_money = 100_000
+        
         self.history = []
     
     def add_income(self, amount, reason):
-        self.money += amount
+        self.start_money += amount
         self.history.append(f"{reason}: +{amount:,} руб.")
     
     def add_expense(self, amount, reason):
-        self.money -= amount
+        self.start_money -= amount
         self.history.append(f"{reason}: -{amount:,} руб.")
     
     def __str__(self):
-        return f"{self.name}: {self.money:,.0f} руб.".replace(",", " ")
+        return f"{self.name}: {self.start_money:,.0f} руб.".replace(",", " ")
 
 def get_numeric_input(prompt):
 
@@ -35,13 +38,12 @@ alice = Person("Алис")
 
 for year in range(years):
     current_rent = bob_rent * (1.05 ** year)
-    bob.add_income(960000, "Зарплата")
+    bob.add_income(Bob_zp, "Зарплата")
     bob.add_expense(current_rent * 12, "Аренда")
     bob.add_expense(bob_other * 12, "Траты")
     
     spending = alice_mortgage if year < 30 else alice_after
-    alice.add_income(2400000, "Зарплата")
+    alice.add_income(Alice_zp, "Зарплата")
     alice.add_expense(spending * 12, "Траты")
 
 print(bob)
-print(alice)
