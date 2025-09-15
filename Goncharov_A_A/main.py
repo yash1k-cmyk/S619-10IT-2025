@@ -1,4 +1,4 @@
-# main.py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
+# main.py
 # TODO:Better input
 # FIXME:pls add input checking
 from person import Person
