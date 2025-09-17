@@ -22,18 +22,14 @@ class Person:
         return f"{self.name}: {self.start_money:,.0f} руб.".replace(",", " ")
 
     def month_update(self, year, month, bob_rent, bob_other):
-        if self.name == "Боб":
-            if self.rent > 0:
-              current_rent = bob_rent * (1.05 ** year)
-            else:
-              return None
-            self.add_income(self.zp, f"Зарплата {month}/{year+1}")
-            self.add_expense(current_rent, f"Аренда {month}/{year+1}")
-            self.add_expense(bob_other, f"Траты {month}/{year+1}")
-            return current_rent
+        if self.rent > 0:
+          current_rent = bob_rent * (1.05 ** year)
+          self.add_expense(current_rent, f"Аренда {month}/{year+1}")
         else:
-            self.add_income(self.zp, f"Зарплата {month}/{year+1}")
-            return None
+          current_rent = None
+        self.add_income(self.zp, f"Зарплата {month}/{year+1}")
+        self.add_expense(bob_other, f"Траты {month}/{year+1}")
+        return current_rent
 
 def get_numeric_input(prompt):
     while True:
@@ -53,12 +49,10 @@ bob = Person("Боб", Bob_zp, bob_rent, bob_other)
 alice = Person("Алис", Alice_zp)
 
 for year in range(years):
+    spending = alice_mortgage if year < 30 else alice_after
     for month in range(1, 13):
         current_rent = bob.month_update(year, month, bob_rent, bob_other)
         print(f"Год {year+1}, Месяц {month}: Боб - +{Bob_zp:,} -{current_rent:,} -{bob_other:,} = {bob.start_money:,} руб.")
-    
-    spending = alice_mortgage if year < 30 else alice_after
-    for month in range(1, 13):
         alice.month_update(year, month, None, None)
         alice.add_expense(spending, f"Траты {month}/{year+1}")
         print(f"Год {year+1}, Месяц {month}: Алис - +{Alice_zp:,} -{spending:,} = {alice.start_money:,} руб.")
