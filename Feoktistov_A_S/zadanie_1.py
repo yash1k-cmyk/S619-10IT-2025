@@ -60,7 +60,6 @@ for year in range(years):
         alice.add_expense(spending, f"Траты {month}/{year+1}")
         print(f"Год {year+1}, Месяц {month}: Алис - +{Alice_zp:,} -{spending:,} = {alice.start_money:,} руб.")
     
-print("--- Год {year+1} завершен ---","\n","Боб: {bob.start_money:,} руб.","\n","Алис: {alice.start_money:,} руб.","\n","")
 
 print(bob)
 print(alice)
