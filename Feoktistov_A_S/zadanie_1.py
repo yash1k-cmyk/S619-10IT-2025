@@ -2,7 +2,7 @@ Bob_zp = 80_000
 Alice_zp = 200_000
 
 class Person:
-    def __init__(self, name, zp, rent=None, other=None):
+    def __init__(self, name, zp, rent=0, other=0):
         self.name = name
         self.start_money = 100_000
         self.zp = zp
@@ -23,7 +23,10 @@ class Person:
 
     def month_update(self, year, month, bob_rent, bob_other):
         if self.name == "Боб":
-            current_rent = bob_rent * (1.05 ** year)
+            if self.rent > 0:
+              current_rent = bob_rent * (1.05 ** year)
+            else:
+              return None
             self.add_income(self.zp, f"Зарплата {month}/{year+1}")
             self.add_expense(current_rent, f"Аренда {month}/{year+1}")
             self.add_expense(bob_other, f"Траты {month}/{year+1}")
