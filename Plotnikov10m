@@ -1,0 +1,166 @@
+import random
+
+
+# Класс для управления финансами
+class FinanceManager:
+    def init(self, start_balance):
+        self.balance = start_balance
+        self.expenses = []
+        self.incomes = []
+
+    def add_expense(self, name, amount, frequency=1):
+        """Добавить расход"""
+        self.expenses.append({
+            'name': name,
+            'amount': amount,
+            'frequency': frequency
+        })
+
+    def add_income(self, name, amount, frequency=1):
+        """Добавить доход"""
+        self.incomes.append({
+            'name': name,
+            'amount': amount,
+            'frequency': frequency
+        })
+
+    def calculate_monthly_total(self, items):
+        """Рассчитать месячную сумму по статьям"""
+        total = 0
+        for item in items:
+            if item['frequency'] == 1:  # ежемесячно
+                total += item['amount']
+            elif item['frequency'] == 0.5:  # раз в два месяца
+                total += item['amount'] / 2
+        return total
+
+    def monthly_update(self):
+        """Обновить баланс за месяц"""
+        total_income = self.calculate_monthly_total(self.incomes)
+        total_expenses = self.calculate_monthly_total(self.expenses)
+        self.balance += total_income - total_expenses
+        return total_income, total_expenses
+
+
+# Класс для персонажа
+class Person:
+    def init(self, name, start_balance, salary):
+        self.name = name
+        self.finance = FinanceManager(start_balance)
+        self.salary = salary
+
+    def add_default_expenses(self):
+        """Добавить стандартные расходы (будет переопределено в дочерних классах)"""
+        pass
+
+    def add_default_incomes(self):
+        """Добавить стандартные доходы (будет переопределено в дочерних классах)"""
+        pass
+
+    def monthly_update(self, month):
+        """Обновить финансы за месяц"""
+        # Добавляем зарплату как доход
+        self.finance.add_income('Зарплата', self.salary)
+
+        # Вызываем обновление баланса
+        income, expenses = self.finance.monthly_update()
+
+        # Очищаем списки для следующего месяца
+        self.finance.expenses.clear()
+        self.finance.incomes.clear()
+
+        return income, expenses
+
+
+# Класс Боба
+class Bob(Person):
+    def init(self, start_balance, salary):
+        super().init('Боб', start_balance, salary)
+        self.rent = 30000
+        self.rent_growth = 0.05
+
+    def add_default_expenses(self, month):
+        """Добавить расходы Боба"""
+        current_rent = self.rent * (1 + self.rent_growth) ** (month // 12)
+
+        self.finance.add_expense('Аренда', current_rent)
+        self.finance.add_expense('Еда', 4000)
+        self.finance.add_expense('Транспорт', 1500)
+        self.finance.add_expense('Такси', 2400)  # 3 раза по 800
+        self.finance.add_expense('Еда для кота', 2000)
+        self.finance.add_expense('Уход за котом', 3000, 0.5)  # раз в 2 месяца
+
+
+# Класс Алисы
+class Alice(Person):
+    def init(self, start_balance, salary, loan_amount, loan_rate, loan_years):
+        super().init('Алиса', start_balance, salary)
+        self.loan_amount = loan_amount
+        self.loan_rate = loan_rate
+        self.loan_years = loan_years
+        self.credit_payment = self.calculate_credit_payment()
+
+    def calculate_credit_payment(self):
+        """Рассчитать платеж по кредиту"""
+        monthly_rate = self.loan_rate / 12
+        months = self.loan_years * 12
+        payment = (self.loan_amount * monthly_rate * (1 + monthly_rate) ** months) / ((1 + monthly_rate) ** months - 1)
+        return payment
+
+    def add_default_expenses(self, month):
+        """Добавить расходы Алисы"""
+        if month < self.loan_years * 12:
+            self.finance.add_expense('Ипотека', self.credit_payment)
+
+
+self.finance.add_expense('Еда', 4000)
+self.finance.add_expense('Транспорт', 1500)
+self.finance.add_expense('Еда для собаки', 2000)
+self.finance.add_expense('Уход за собакой', 5000, 0.5)  # раз в 2 месяца
+self.finance.add_expense('Бизнес расходы', 60000)
+
+
+def add_default_incomes(self, month):
+    """Добавить доходы Алисы"""
+    self.finance.add_income('Бизнес доход', 150000)
+
+    # Случайный выигрыш на выставке
+    if random.random() < 0.25:
+        self.finance.add_income('Выигрыш на выставке', 100000)
+
+
+# Основная программа
+def main():
+    # Создаем персонажей
+    bob = Bob(100000, 80000)
+    alice = Alice(100000, 200000, 10000000, 0.12, 15)
+
+    # Симуляция
+    years = int(input("Сколько лет симулируем? "))
+    months = years * 12
+
+    for month in range(months):
+        # Боб
+        bob.add_default_expenses(month)
+        bob_income, bob_expenses = bob.monthly_update(month)
+
+        # Алиса
+        alice.add_default_expenses(month)
+        alice.add_default_incomes(month)
+        alice_income, alice_expenses = alice.monthly_update(month)
+
+        # Годовой отчет
+        if (month + 1) % 12 == 0:
+            year = (month + 1) // 12
+            print(f"\nГод {year}:")
+            print(f"Боб: {bob.finance.balance:,.0f} руб.")
+            print(f"Алиса: {alice.finance.balance:,.0f} руб.")
+
+    # Итоговый отчет
+    print(f"\nИтог за {years} лет:")
+    print(f"Боб: {bob.finance.balance:,.0f} руб.")
+    print(f"Алиса: {alice.finance.balance:,.0f} руб.")
+
+
+if name == "main":
+    main()
