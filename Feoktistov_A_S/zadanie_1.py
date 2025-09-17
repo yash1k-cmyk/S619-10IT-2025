@@ -37,13 +37,23 @@ bob = Person("Боб")
 alice = Person("Алис")
 
 for year in range(years):
-    current_rent = bob_rent * (1.05 ** year)
-    bob.add_income(Bob_zp, "Зарплата")
-    bob.add_expense(current_rent * 12, "Аренда")
-    bob.add_expense(bob_other * 12, "Траты")
+    for month in range(1, 13):
+        current_rent = bob_rent * (1.05 ** year)
+        bob.add_income(Bob_zp, f"Зарплата {month}/{year+1}")
+        bob.add_expense(current_rent, f"Аренда {month}/{year+1}")
+        bob.add_expense(bob_other, f"Траты {month}/{year+1}")
+
+        print(f"Год {year+1}, Месяц {month}: Боб - +{Bob_zp:,} -{current_rent:,} -{bob_other:,} = {bob.start_money:,} руб.")
     
     spending = alice_mortgage if year < 30 else alice_after
-    alice.add_income(Alice_zp, "Зарплата")
-    alice.add_expense(spending * 12, "Траты")
-
+    for month in range(1, 13):
+        alice.add_income(Alice_zp, f"Зарплата {month}/{year+1}")
+        alice.add_expense(spending, f"Траты {month}/{year+1}")
+        
+        print(f"Год {year+1}, Месяц {month}: Алис - +{Alice_zp:,} -{spending:,} = {alice.start_money:,} руб.")
+    
+    print(f"--- Год {year+1} завершен ---")
+    print(f"Боб: {bob.start_money:,} руб.")
+    print(f"Алис: {alice.start_money:,} руб.")
+    print()
 print(bob)
