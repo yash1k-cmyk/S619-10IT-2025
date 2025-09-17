@@ -8,7 +8,7 @@ while True:
     except ValueError:
         print("Ошибка. Напишите только число")
 
-while True:
+while True: 
     try:
         nomer_mes = int(input("месяц: "))
         if 0 <= nomer_mes <= 12:
