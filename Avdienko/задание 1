@@ -1,0 +1,86 @@
+import math
+import pandas as pd
+
+class Person:
+    def __init__(self, name, salary, food, transport):
+        self.name = name
+        self.salary = salary
+        self.food = food
+        self.transport = transport
+        self.balance = 0
+        self.history = []
+        
+    def add_monthly_income(self):
+        self.balance += self.salary
+        
+    def pay_expenses(self):
+        self.balance -= (self.food + self.transport)
+        
+    def log(self, month):
+        self.history.append({
+            "Month": month,
+            "Name": self.name,
+            "Balance": round(self.balance, 2)
+        })
+        
+class Bob(Person):
+    def __init__(self):
+        super().__init__("Bob", 80000, 4000, 1500)
+        self.rent = 30000
+        self.cat_food = 2000
+        self.cat_grooming = 3000
+        
+    def pay_expenses(self, month):
+        super().pay_expenses()
+        # rent
+        self.balance -= self.rent
+        # cat pay_expenses
+        self.balance -= self.cat_food
+        if month % 2 == 0:  
+            self.balance -= self.cat_grooming
+            
+    def update_yearly(self):
+        self.rent *= 1.05  
+        
+class Alice(Person):
+    def __init__(self):
+        super().__init__("Alice", 200000, 4000, 1500)
+        self.flat_price = 10_000_000
+        self.morgage_rate = 0.12 
+        self.years = 20
+        self.mortgage_payment = self.calc_annuity_payment()
+        
+    def calc_annuity_payment(self):
+        n = self.years * 12
+        r = self.morgage_rate / 12
+        return self.flat_price * (r * (1 + r)**n) / ((1+r)**n - 1)
+        
+    def pay_expenses(self, month):
+        super().pay_expenses()
+        
+        self.balance -= self.mortgage_payment
+        
+bob = Bob()
+alice = Alice()
+
+month = 24
+for m in range(1, month + 1):
+    
+    bob.add_monthly_income()
+    alice.add_monthly_income()
+    
+    bob.pay_expenses(m)
+    alice.pay_expenses(m)
+    
+    bob.log(m)
+    alice.log(m)
+    
+    if m % 12 == 0:
+        bob.update_yearly()
+        
+df = pd.DataFrame(bob.history + alice.history)
+df_sorted = df.sort_values(by=["Month", "Name"]).reset_index(drop=True)
+
+print(df)
+
+df.to_csv("simulation.csv", index=False, encoding="utf-8-sig")
